@@ -1075,7 +1075,7 @@
           <button class="tab" onclick="switchTab('parsetable')">Parse Table</button>
           <button class="tab" onclick="switchTab('symtable')">Symbol Table</button>
           <button class="tab" onclick="switchTab('ast')">AST</button>
-          <!--<button class="tab" onclick="switchTab('optimizer')">Optimizer</button>-->
+          <button class="tab" onclick="switchTab('optimizer')">Optimizer</button>
         </div>
 
         <!-- Tab 1: Tokens -->
@@ -1134,7 +1134,7 @@
     <div class="status-bar" id="statusBar">
       <div class="pipeline">
         <span class="stage" id="s-lexer">Lexer</span><span class="arrow">→</span>
-        <span class="stage" id="s-parser">Parser</span><span class="arrow">→</span>
+        <!--<span class="stage" id="s-parser">Parser</span><span class="arrow">→</span>-->
         <span class="stage" id="s-ast">AST</span><span class="arrow">→</span>
         <span class="stage" id="s-analyzer">Analyzer</span><span class="arrow">→</span>
         <span class="stage" id="s-optimizer">Optimizer</span>
@@ -1274,7 +1274,7 @@
     function resetStages() {
       ['s-lexer', 's-parser', 's-ast', 's-analyzer', 's-optimizer'].forEach(id => {
         const el = document.getElementById(id);
-        el.className = 'stage';
+        if (el) el.className = 'stage';
       });
       document.getElementById('compileTime').textContent = '';
     }
@@ -1375,6 +1375,7 @@ async function runCompiler() {
 
     function setStage(id, success, error) {
       const el = document.getElementById(id);
+      if (!el) return;
       if (success) { el.className = 'stage success'; el.innerHTML = el.textContent.replace(/ [✅❌]/g, '') + ' ✅'; }
       else if (error) { el.className = 'stage error'; el.innerHTML = el.textContent.replace(/ [✅❌]/g, '') + ' ❌'; }
     }
@@ -1992,10 +1993,10 @@ async function runCompiler() {
     <div class="bottom-nav-divider"></div>
     <div class="bottom-nav-group" id="compilerTabs">
       <button class="bnav-btn bnav-tab active" data-tab="tokens" onclick="switchTab('tokens')">Tokens</button>
-      <button class="bnav-btn bnav-tab" data-tab="parsetable" onclick="switchTab('parsetable')">Parse Table</button>
+      <!--<button class="bnav-btn bnav-tab" data-tab="parsetable" onclick="switchTab('parsetable')">Parse Table</button> -->
       <button class="bnav-btn bnav-tab" data-tab="symtable" onclick="switchTab('symtable')">Symbol Table</button>
       <button class="bnav-btn bnav-tab" data-tab="ast" onclick="switchTab('ast')">AST</button>
-      <!--<button class="bnav-btn bnav-tab" data-tab="optimizer" onclick="switchTab('optimizer')">⚡ Optimizer</button>-->
+      <button class="bnav-btn bnav-tab" data-tab="optimizer" onclick="switchTab('optimizer')">Optimizer</button>
     </div>
   </nav>
 

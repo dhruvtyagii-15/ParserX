@@ -23,7 +23,7 @@ static void add_declaration(const char *name, const char *type,
     e->references = 0;
 }
 
-static void inc_ref(const char *name) {
+static void inc_ref(const char *name) {//Jab variable use hota hai:
     int idx = find_symbol(name);
     if (idx >= 0) g_st->entries[idx].references++;
 }

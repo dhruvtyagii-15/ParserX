@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 /* ── AST node allocator ──────────────────────────────────── */
-static ASTNode *new_node(const char *type, const char *value, int line) {
+static ASTNode *new_node(const char *type, const char *value, int line) {//Har AST node ban raha hai
     ASTNode *n = (ASTNode *)calloc(1, sizeof(ASTNode));
     if (!n) return NULL;
     strncpy(n->type,  type,  AST_TYPE_LEN - 1);
@@ -22,7 +22,7 @@ static void add_child(ASTNode *parent, ASTNode *child) {
 }
 
 /* ── Builder context ─────────────────────────────────────── */
-typedef struct {
+typedef struct {//Parser ka pointer jahan hai
     const Token *tokens;
     int          count;
     int          pos;
@@ -38,7 +38,7 @@ static const Token *b_current(Builder *b) {
 static const char *b_peek_val(Builder *b)  { return b_current(b)->value; }
 static const char *b_peek_type(Builder *b) { return b_current(b)->type; }
 
-static const Token *b_eat(Builder *b, const char *val, const char *type) {
+static const Token *b_eat(Builder *b, const char *val, const char *type) {//expected token hai ya nahi
     const Token *tok = b_current(b);
     if (val && strcmp(tok->value, val) != 0) {
         if (!b->has_error) {
@@ -79,7 +79,7 @@ static ASTNode *parse_factor(Builder *b);
 static ASTNode *parse_assign_no_semi(Builder *b);
 
 /* ── Program ─────────────────────────────────────────────── */
-static ASTNode *parse_program(Builder *b) {
+static ASTNode *parse_program(Builder *b) {//Pure program ko parse karta hai
     ASTNode *prog = new_node("Program", "", 1);
     if (!prog) return NULL;
     /* parse statement list and attach children directly */
@@ -94,7 +94,7 @@ static ASTNode *parse_program(Builder *b) {
 }
 
 /* ── StatementList ───────────────────────────────────────── */
-static ASTNode *parse_stmt_list(Builder *b) {
+static ASTNode *parse_stmt_list(Builder *b) {//parse_stmt_list()
     ASTNode *list = new_node("_List", "", 0);
     if (!list) return NULL;
     while (!b->has_error) {
@@ -109,7 +109,7 @@ static ASTNode *parse_stmt_list(Builder *b) {
 }
 
 /* ── Statement ───────────────────────────────────────────── */
-static ASTNode *parse_statement(Builder *b) {
+static ASTNode *parse_statement(Builder *b) {//parse_statement()
     if (b->has_error) return NULL;
     const char *val = b_peek_val(b);
     const char *typ = b_peek_type(b);

@@ -9,6 +9,19 @@ import json
 import time
 import subprocess
 import tempfile
+import logging
+
+# ── Safe logging (avoids OSError on Windows with Flask reloader) ──
+log = logging.getLogger('tinylang')
+log.setLevel(logging.DEBUG)
+# Only add handler if none exist (avoid duplicates on reload)
+if not log.handlers:
+    try:
+        _handler = logging.StreamHandler(sys.stdout)
+        _handler.setFormatter(logging.Formatter('[%(levelname)s] %(message)s'))
+        log.addHandler(_handler)
+    except OSError:
+        pass  # stdout also broken — silently skip
 
 from flask import Flask, render_template, request, jsonify
 from compiler.grammar_tool import analyze_grammar
@@ -36,22 +49,23 @@ def index():
 
 @app.route('/compile', methods=['POST'])
 def compile_code():
+  try:
     data = request.get_json(silent=True) or {}
 
     # ── Debug: log received payload ──────────────────────────
-    print(f"[DEBUG] /compile received keys: {list(data.keys())}", file=sys.stderr)
+    log.debug(f"/compile received keys: {list(data.keys())}")
 
     # Support both 'code' (frontend sends this) and 'source_code'
     source_code = data.get('code', data.get('source_code', ''))
 
-    print(f"[DEBUG] source_code length : {len(source_code)}", file=sys.stderr)
-    print(f"[DEBUG] source_code empty  : {not source_code.strip()}", file=sys.stderr)
+    log.debug(f"source_code length : {len(source_code)}")
+    log.debug(f"source_code empty  : {not source_code.strip()}")
     if source_code:
         preview = source_code[:200].replace('\n', '\\n').replace('\r', '\\r')
-        print(f"[DEBUG] source_code preview: {preview}", file=sys.stderr)
+        log.debug(f"source_code preview: {preview}")
 
     compiler_path = _find_compiler()
-    print(f"[DEBUG] compiler_path      : {compiler_path}", file=sys.stderr)
+    log.debug(f"compiler_path      : {compiler_path}")
 
     if not compiler_path:
         return jsonify({
@@ -80,7 +94,7 @@ def compile_code():
             f.write(source_code)
             tmp_file = f.name
 
-        print(f"[DEBUG] temp file          : {tmp_file}", file=sys.stderr)
+        log.debug(f"temp file          : {tmp_file}")
 
         try:
             proc = subprocess.run(
@@ -117,10 +131,10 @@ def compile_code():
     elapsed_ms = round((time.time() - start) * 1000, 2)
 
     # ── Debug: log subprocess results ────────────────────────
-    print(f"[DEBUG] proc.returncode    : {proc.returncode}", file=sys.stderr)
+    log.debug(f"proc.returncode    : {proc.returncode}")
     if proc.stderr:
-        print(f"[DEBUG] proc.stderr        : {proc.stderr[:300]}", file=sys.stderr)
-    print(f"[DEBUG] proc.stdout (500ch): {proc.stdout[:500]}", file=sys.stderr)
+        log.debug(f"proc.stderr        : {proc.stderr[:300]}")
+    log.debug(f"proc.stdout (500ch): {proc.stdout[:500]}")
 
     if proc.returncode != 0:
         # Try to parse stdout as JSON error first
@@ -141,7 +155,7 @@ def compile_code():
     try:
         result = json.loads(proc.stdout)
     except (json.JSONDecodeError, ValueError):
-        print(f"[DEBUG] JSON parse failed on stdout (first 1000 chars): {proc.stdout[:1000]}", file=sys.stderr)
+        log.error(f"JSON parse failed on stdout (first 1000 chars): {proc.stdout[:1000]}")
         return jsonify({
             'status': 'error',
             'error': 'Compiler returned malformed output.',
@@ -160,6 +174,16 @@ def compile_code():
     result['compile_time_ms'] = elapsed_ms
 
     return jsonify(result)
+
+  except Exception as exc:
+    # Top-level safety net: always return JSON, never an HTML error page
+    log.exception("Unhandled exception in /compile")
+    return jsonify({
+        'status': 'error',
+        'error': f'Internal server error: {str(exc)}',
+        'tokens': [], 'parse_table': {}, 'ast': {},
+        'symbol_table': [], 'optimizer': {}, 'compile_time_ms': 0,
+    }), 500
 
 
 @app.route('/grammar-analyze', methods=['POST'])

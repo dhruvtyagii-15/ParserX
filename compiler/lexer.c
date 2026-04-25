@@ -6,7 +6,7 @@
 
 #define MAX_INPUT_SIZE (1024 * 1024)  /* 1 MB */
 
-static const char *KEYWORDS[] = {
+static const char *KEYWORDS[] = { //Yeh batata hai kaunse words reserved hain (int, if, while...)
     "int", "float", "string", "if", "else", "while", "for",
     "return", "func", "print", NULL
 };
@@ -32,7 +32,7 @@ static void set_token(Token *t, const char *type, const char *val, int line) {
     t->line = line;
 }
 
-LexResult lexer_tokenize(const char *src, int src_len) {
+LexResult lexer_tokenize(const char *src, int src_len) {//Yeh pura input scan karta hai character by character
     LexResult res;
     memset(&res, 0, sizeof(res));
 
