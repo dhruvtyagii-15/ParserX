@@ -1,15 +1,21 @@
+// symbol_table.c — Symbol Table Builder
+// yeh module AST walk karke saare variables aur functions ko track karta hai
+// naam, type, scope, line number, aur references count store hota hai
+
 #include "symbol_table.h"
 #include <string.h>
 #include <stdio.h>
 
 static SymTable *g_st;
 
+// symbol table me variable ka naam dhoondho — mila to index, nahi to -1
 static int find_symbol(const char *name) {
     for (int i = 0; i < g_st->count; i++)
         if (strcmp(g_st->entries[i].name, name) == 0) return i;
     return -1;
 }
 
+// naya variable/function declaration add karo symbol table me
 static void add_declaration(const char *name, const char *type,
                             const char *scope, int line) {
     int idx = find_symbol(name);
@@ -28,6 +34,7 @@ static void inc_ref(const char *name) {//Jab variable use hota hai:
     if (idx >= 0) g_st->entries[idx].references++;
 }
 
+// AST recursively walk karo aur declarations/references collect karo
 static void walk(const ASTNode *node, const char *scope) {
     if (!node) return;
 
@@ -72,6 +79,7 @@ static void walk(const ASTNode *node, const char *scope) {
     for (int i = 0; i < node->child_count; i++) walk(node->children[i], scope);
 }
 
+// yeh function baahar se call hota hai — AST root se symbol table build karta hai
 SymTable symbol_table_build(const ASTNode *root) {
     SymTable st;
     memset(&st, 0, sizeof(st));
@@ -81,6 +89,7 @@ SymTable symbol_table_build(const ASTNode *root) {
     return st;
 }
 
+// symbol table ko JSON array format me convert karta hai
 void symbol_table_to_json(const SymTable *st, StrBuf *out) {
     buf_append(out, "[");
     for (int i = 0; i < st->count; i++) {

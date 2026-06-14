@@ -64,6 +64,7 @@ def main():
         'compiler/ast.c',
         'compiler/symbol_table.c',
         'compiler/optimizer.c',
+        'compiler/semantic.c',
         'compiler/json_output.c',
     ]
 

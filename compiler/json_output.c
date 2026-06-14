@@ -1,9 +1,14 @@
+// json_output.c — JSON output helper module
+// yeh module dynamic string buffer provide karta hai
+// JSON output safely build karne ke liye
+
 #include "json_output.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
 
+// string buffer initialize karo — 256 bytes se shuru
 void buf_init(StrBuf *b) {
     b->data = (char *)malloc(256);
     if (b->data) b->data[0] = '\0';
@@ -11,6 +16,7 @@ void buf_init(StrBuf *b) {
     b->cap  = 256;
 }
 
+// buffer ki memory free karo
 void buf_free(StrBuf *b) {
     free(b->data);
     b->data = NULL;
@@ -18,6 +24,7 @@ void buf_free(StrBuf *b) {
     b->cap  = 0;
 }
 
+// buffer ka size badhao agar zaroorat ho
 static void buf_grow(StrBuf *b, size_t needed) {
     if (b->len + needed + 1 <= b->cap) return;
     size_t newcap = b->cap * 2 + needed + 256;
@@ -27,6 +34,7 @@ static void buf_grow(StrBuf *b, size_t needed) {
     b->cap  = newcap;
 }
 
+// buffer me string append karo
 void buf_append(StrBuf *b, const char *s) {
     if (!s || !b->data) return;
     size_t slen = strlen(s);
@@ -36,6 +44,7 @@ void buf_append(StrBuf *b, const char *s) {
     b->len += slen;
 }
 
+// formatted string append karo (printf style)
 void buf_appendf(StrBuf *b, const char *fmt, ...) {
     if (!b->data) return;
     char tmp[2048];
@@ -46,6 +55,7 @@ void buf_appendf(StrBuf *b, const char *fmt, ...) {
     buf_append(b, tmp);
 }
 
+// JSON safe string append karo — quotes aur escaping ke saath
 void buf_append_json_str(StrBuf *b, const char *s) {
     buf_append(b, "\"");
     if (!s) { buf_append(b, "\""); return; }

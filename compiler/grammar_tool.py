@@ -2,6 +2,8 @@
 TinyLang Grammar Tool — Generic LL(1) analysis engine.
 Parses user-provided grammars, computes FIRST/FOLLOW sets,
 builds LL(1) parse tables, detects conflicts, and runs stack-based parsing.
+
+yeh module grammar lab ka core hai — user ki grammar analyze karke results deta hai.
 """
 
 
@@ -9,6 +11,7 @@ builds LL(1) parse tables, detects conflicts, and runs stack-based parsing.
 # Grammar Text Parser
 # ────────────────────────────────────────────
 
+# yeh function grammar text ko parse karke internal representation me convert karta hai
 def parse_grammar_text(text: str) -> dict:
     """
     Parse a textual grammar definition into internal representation.
@@ -61,11 +64,13 @@ def parse_grammar_text(text: str) -> dict:
 # Identify Non-terminals and Terminals
 # ────────────────────────────────────────────
 
+# non-terminals ki list return karo (grammar ki keys)
 def get_non_terminals(grammar: dict) -> list:
     """Get sorted list of non-terminals (keys of the grammar)."""
     return list(grammar.keys())
 
 
+# terminals ki list return karo (jo non-terminals nahi hain aur epsilon bhi nahi)
 def get_terminals(grammar: dict) -> list:
     """Get sorted list of terminals (symbols that are not non-terminals and not ε)."""
     non_terminals = set(grammar.keys())
@@ -82,6 +87,7 @@ def get_terminals(grammar: dict) -> list:
 # Left Recursion Detection
 # ────────────────────────────────────────────
 
+# direct left recursion detect karo grammar me
 def check_left_recursion(grammar: dict) -> list:
     """
     Detect direct left recursion in the grammar.
@@ -108,6 +114,7 @@ def check_left_recursion(grammar: dict) -> list:
 # FIRST Sets
 # ────────────────────────────────────────────
 
+# FIRST sets compute karo fixed-point iteration se
 def compute_first(grammar: dict) -> dict:
     """
     Compute FIRST sets for all non-terminals using fixed-point iteration.
@@ -181,6 +188,7 @@ def first_of_sequence(seq: list, first_sets: dict, non_terminals: set) -> set:
 # FOLLOW Sets
 # ────────────────────────────────────────────
 
+# FOLLOW sets compute karo fixed-point iteration se
 def compute_follow(grammar: dict, first_sets: dict, start_symbol: str = None) -> dict:
     """
     Compute FOLLOW sets for all non-terminals using fixed-point iteration.
@@ -231,6 +239,7 @@ def compute_follow(grammar: dict, first_sets: dict, start_symbol: str = None) ->
 # LL(1) Parse Table
 # ────────────────────────────────────────────
 
+# LL(1) parse table banao aur conflicts detect karo
 def build_parse_table(grammar: dict, first_sets: dict, follow_sets: dict) -> tuple:
     """
     Build LL(1) parse table and detect conflicts.
@@ -295,6 +304,7 @@ def build_parse_table(grammar: dict, first_sets: dict, follow_sets: dict) -> tup
 # Stack-based LL(1) Predictive Parser
 # ────────────────────────────────────────────
 
+# stack-based LL(1) predictive parsing run karo input string par
 def parse_input_string(input_str: str, parse_table: dict, start_symbol: str,
                        non_terminals: set, max_steps: int = 200) -> dict:
     """
@@ -428,6 +438,7 @@ def parse_input_string(input_str: str, parse_table: dict, start_symbol: str,
 # Public API — Full Analysis Pipeline
 # ────────────────────────────────────────────
 
+# yeh main public API hai — poori LL(1) analysis pipeline chalata hai
 def analyze_grammar(grammar_text: str, input_string: str = None) -> dict:
     """
     Run the full LL(1) analysis pipeline on a user-provided grammar.

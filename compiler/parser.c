@@ -1,3 +1,7 @@
+// parser.c — LL(1) Predictive Parser
+// yeh module token stream ko parse table ke through validate karta hai
+// stack-based LL(1) parsing algorithm use hota hai
+
 #include "parser.h"
 #include <string.h>
 #include <stdio.h>
@@ -12,13 +16,14 @@ static const char *NON_TERMINALS[] = {
     "ForAssign", NULL
 };
 
+// check karo ki symbol non-terminal hai ya nahi
 static int is_nonterminal(const char *sym) {
     for (int i = 0; NON_TERMINALS[i]; i++)
         if (strcmp(NON_TERMINALS[i], sym) == 0) return 1;
     return 0;
 }
 
-/* Map a token to its grammar terminal string */
+// token ko grammar terminal string me map karo
 static void token_to_terminal(const Token *tok, char *out, int outlen) {
     if (strcmp(tok->type, "EOF") == 0) {
         strncpy(out, "$", (size_t)outlen - 1);
@@ -35,6 +40,8 @@ static void token_to_terminal(const Token *tok, char *out, int outlen) {
 
 #define STACK_SIZE 2048
 
+// yeh function LL(1) predictive parsing run karta hai
+// tokens aur parse table leke accepted/rejected return karta hai
 ParseResult parser_run(const Token *tokens, int count, const ParseTable *pt) {
     ParseResult res;
     res.accepted = 0;

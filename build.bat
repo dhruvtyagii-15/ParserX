@@ -23,6 +23,7 @@ gcc -Wall -Wextra -O2 -o tinylang_compiler.exe ^
     compiler/ast.c ^
     compiler/symbol_table.c ^
     compiler/optimizer.c ^
+    compiler/semantic.c ^
     compiler/json_output.c
 
 if %ERRORLEVEL% equ 0 (

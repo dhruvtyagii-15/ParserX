@@ -1,9 +1,13 @@
+// optimizer.c — Code Optimizer Module
+// yeh module AST aur source code par safe optimizations apply karta hai:
+// Constant Propagation, Constant Folding, Dead Code Elimination, Unused Variable, Loop Invariant
+
 #include "optimizer.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-/* ── Line splitting ─────────────────────────── */
+/* ── Line splitting — source code ko lines me todna ── */
 #define MAX_LINES 65536
 static char *g_lines[MAX_LINES];         /* pointers into modified copy */
 static char  g_line_buf[1024 * 1024];    /* working buffer for opt lines — matches MAX_INPUT */
@@ -34,7 +38,7 @@ static void join_lines(char *out, int outlen) {
     }
 }
 
-/* ── Helper: try evaluate a BinaryOp node ───── */
+/* ── Helper: BinaryOp node ko evaluate karne ki koshish karo ───── */
 static int try_eval(const ASTNode *node, double *result) {
     if (!node || strcmp(node->type, "BinaryOp") != 0) return 0;
     if (node->child_count < 2) return 0;
@@ -65,9 +69,10 @@ static const char *op_name(const char *op) {
     return "operation";
 }
 
-/* ── Constant folding ───────────────────────── */
+/* ── Constant folding — compile-time par expression evaluate karna ── */
 static OptResult *g_opt;
 
+// yeh function constant expressions ko compile-time par fold karta hai
 static void const_fold(const ASTNode *node) {
     if (!node) return;
     if (strcmp(node->type, "VarDecl") == 0 && node->child_count == 1) {
@@ -114,7 +119,8 @@ static void const_fold(const ASTNode *node) {
     for (int i = 0; i < node->child_count; i++) const_fold(node->children[i]);
 }
 
-/* ── Dead code elimination ──────────────────── */
+/* ── Dead code elimination — return ke baad ka code hatana ── */
+// yeh function return statement ke baad aane wale dead code ko remove karta hai
 static void dead_code_elim(const ASTNode *node) {
     if (!node) return;
     if (strcmp(node->type, "Block") == 0) {
@@ -147,8 +153,8 @@ static void dead_code_elim(const ASTNode *node) {
     for (int i = 0; i < node->child_count; i++) dead_code_elim(node->children[i]);
 }
 
-/* ── Unused variable detection ──────────────── */
-/* collect declarations */
+/* ── Unused variable detection — jo variable use nahi hua usko hataana ── */
+/* declarations collect karo */
 static void collect_decls(const ASTNode *node, char names[64][64], int lines[64], int *cnt) {
     if (!node) return;
     if (strcmp(node->type, "VarDecl") == 0) {
@@ -173,6 +179,7 @@ static void collect_used(const ASTNode *node, char used[64][64], int *ucnt) {
     for (int i = 0; i < node->child_count; i++) collect_used(node->children[i], used, ucnt);
 }
 
+// yeh function check karta hai ki koi variable declared hai par used nahi
 static void unused_var_check(const ASTNode *root) {
     char decl_names[64][64]; int decl_lines[64]; int dcnt = 0;
     char used_names[64][64]; int ucnt = 0;
@@ -275,6 +282,7 @@ static void check_invariant_exprs(const ASTNode *node,
     for(int i=0;i<node->child_count;i++) check_invariant_exprs(node->children[i], mods, mcnt);
 }
 
+// yeh function loop ke andar invariant expressions dhundh ke report karta hai
 static void loop_invariant(const ASTNode *node) {
     if (!node) return;
     if (strcmp(node->type,"WhileStmt")==0 || strcmp(node->type,"ForStmt")==0) {
@@ -285,7 +293,139 @@ static void loop_invariant(const ASTNode *node) {
     for(int i=0;i<node->child_count;i++) loop_invariant(node->children[i]);
 }
 
-/* ── Public API ──────────────────────────────── */
+/* ── Constant Propagation — variable ko uski known constant value se replace karna ── */
+
+#define MAX_CONST_MAP 128
+
+// yeh struct ek variable ka naam aur uski constant value store karta hai
+typedef struct {
+    char name[64];
+    char value[128];
+    int  is_valid;   // 1 = constant value known hai, 0 = unknown
+} ConstMapEntry;
+
+static ConstMapEntry g_const_map[MAX_CONST_MAP];
+static int g_const_map_count;
+
+// constant map me variable dhoondho
+static int cmap_find(const char *name) {
+    for (int i = 0; i < g_const_map_count; i++)
+        if (g_const_map[i].is_valid && strcmp(g_const_map[i].name, name) == 0) return i;
+    return -1;
+}
+
+// constant map me variable add ya update karo
+static void cmap_set(const char *name, const char *value) {
+    int idx = cmap_find(name);
+    if (idx >= 0) {
+        strncpy(g_const_map[idx].value, value, 127);
+        g_const_map[idx].value[127] = '\0';
+        g_const_map[idx].is_valid = 1;
+        return;
+    }
+    if (g_const_map_count >= MAX_CONST_MAP) return;
+    ConstMapEntry *e = &g_const_map[g_const_map_count++];
+    strncpy(e->name, name, 63); e->name[63] = '\0';
+    strncpy(e->value, value, 127); e->value[127] = '\0';
+    e->is_valid = 1;
+}
+
+// constant map se variable remove karo (value unknown ho gayi)
+static void cmap_invalidate(const char *name) {
+    int idx = cmap_find(name);
+    if (idx >= 0) g_const_map[idx].is_valid = 0;
+}
+
+// check karo ki expression ek simple literal hai ya nahi
+static int is_simple_literal(const ASTNode *node) {
+    if (!node) return 0;
+    if (strcmp(node->type, "Literal") == 0) {
+        if (node->value[0] == '"') return 0; // strings skip karo
+        return 1;
+    }
+    return 0;
+}
+
+// constant propagation — yeh function AST walk karta hai aur known constants replace karta hai
+static void const_prop(const ASTNode *node) {
+    if (!node) return;
+
+    // VarDecl: agar literal assign hua hai to constant map me daalo
+    if (strcmp(node->type, "VarDecl") == 0) {
+        char vtype[64] = "", vname[64] = "";
+        sscanf(node->value, "%63s %63s", vtype, vname);
+        if (node->child_count == 1 && is_simple_literal(node->children[0])) {
+            cmap_set(vname, node->children[0]->value);
+        } else if (node->child_count == 1) {
+            // non-literal expression — agar expression me known variables hain to replace karo
+            cmap_invalidate(vname); // value unknown for now
+        }
+    }
+
+    // Assignment: variable reassign ho raha hai
+    if (strcmp(node->type, "Assignment") == 0) {
+        if (node->child_count == 1 && is_simple_literal(node->children[0])) {
+            cmap_set(node->value, node->children[0]->value);
+        } else {
+            cmap_invalidate(node->value); // non-constant reassignment
+        }
+    }
+
+    // Identifier in expression: agar constant map me hai to source line me replace karo
+    if (strcmp(node->type, "Identifier") == 0 && g_opt->opt_count < MAX_OPTS) {
+        int idx = cmap_find(node->value);
+        if (idx >= 0) {
+            int lidx = node->line - 1;
+            if (lidx >= 0 && lidx < g_line_count && g_lines[lidx]) {
+                // check karo ki yeh identifier declaration me nahi hai (VarDecl ka naam skip karo)
+                // source line me variable naam dhoondho aur replace karo
+                char *line_str = g_lines[lidx];
+                char *pos = strstr(line_str, node->value);
+                if (pos) {
+                    // make sure yeh '=' ke right side pe hai (simple heuristic)
+                    char *eq = strchr(line_str, '=');
+                    if (eq && pos > eq) {
+                        // optimization entry banao
+                        OptEntry *oe = &g_opt->opts[g_opt->opt_count];
+                        strncpy(oe->original, line_str, OPT_STR_LEN - 1);
+                        oe->original[OPT_STR_LEN - 1] = '\0';
+
+                        // naya line banao jisme variable ki jagah constant ho
+                        static char prop_lines[MAX_OPTS][512];
+                        int pi = g_opt->opt_count;
+                        char *new_line = prop_lines[pi];
+                        int pre_len = (int)(pos - line_str);
+                        int name_len = (int)strlen(node->value);
+                        int val_len = (int)strlen(g_const_map[idx].value);
+                        int rest_len = (int)strlen(pos + name_len);
+
+                        if (pre_len + val_len + rest_len < 511) {
+                            memcpy(new_line, line_str, (size_t)pre_len);
+                            memcpy(new_line + pre_len, g_const_map[idx].value, (size_t)val_len);
+                            memcpy(new_line + pre_len + val_len, pos + name_len, (size_t)rest_len);
+                            new_line[pre_len + val_len + rest_len] = '\0';
+
+                            strncpy(oe->type, "Constant Propagation", sizeof(oe->type) - 1);
+                            oe->line = node->line;
+                            strncpy(oe->optimized, new_line, OPT_STR_LEN - 1);
+                            snprintf(oe->explanation, OPT_STR_LEN,
+                                     "Replaced variable '%s' with its known constant value %s",
+                                     node->value, g_const_map[idx].value);
+
+                            g_lines[lidx] = new_line;
+                            g_opt->opt_count++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < node->child_count; i++) const_prop(node->children[i]);
+}
+
+/* ── Public API — optimizer run karo ──────────── */
+// yeh function saari optimizations sequentially apply karta hai
 OptResult optimizer_run(const ASTNode *root, const char *source_code) {
     OptResult res;
     memset(&res, 0, sizeof(res));
@@ -295,6 +435,12 @@ OptResult optimizer_run(const ASTNode *root, const char *source_code) {
     g_opt = &res;
     init_lines(source_code);
 
+    // constant map initialize karo
+    memset(g_const_map, 0, sizeof(g_const_map));
+    g_const_map_count = 0;
+
+    // pehle constant propagation, fir folding — taaki propagated values fold ho sakein
+    const_prop(root);
     const_fold(root);
     dead_code_elim(root);
     unused_var_check(root);
@@ -305,6 +451,7 @@ OptResult optimizer_run(const ASTNode *root, const char *source_code) {
     return res;
 }
 
+// yeh function optimizer result ko JSON format me convert karta hai
 void optimizer_to_json(const OptResult *res, StrBuf *out) {
     buf_append(out, "{");
     buf_append(out, "\"original_code\":");  buf_append_json_str(out, res->original_code);

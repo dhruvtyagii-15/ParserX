@@ -1018,6 +1018,25 @@
           <button class="dropdown-item" onclick="loadExample(4)">4. If-Else Branching</button>
           <button class="dropdown-item" onclick="loadExample(5)">5. While Loop Counter</button>
           <button class="dropdown-item" onclick="loadExample(6)">6. Function Definition</button>
+          <button class="dropdown-item" onclick="loadExample(7)">7. ⚡ Constant Folding</button>
+          <button class="dropdown-item" onclick="loadExample(8)">8. ⚡ Constant Propagation</button>
+          <button class="dropdown-item" onclick="loadExample(9)">9. ⚡ Reassignment + Propagation</button>
+          <button class="dropdown-item" onclick="loadExample(10)">10. ⚡ Dead Code Removal</button>
+          <button class="dropdown-item" onclick="loadExample(11)">11. ⚡ Unused Variable</button>
+          <button class="dropdown-item" onclick="loadExample(12)">12. ❌ Type Mismatch</button>
+          <button class="dropdown-item" onclick="loadExample(13)">13. ❌ Undeclared Variable</button>
+          <button class="dropdown-item" onclick="loadExample(14)">14. ❌ Duplicate Declaration</button>
+          <button class="dropdown-item" onclick="loadExample(15)">15. 🔥 Complex (If + Loop)</button>
+          <button class="dropdown-item" onclick="loadExample(16)">16. 🔥 Multi-Function Program</button>
+          <button class="dropdown-item" onclick="loadExample(17)">17. ⚡ Chained Propagation</button>
+          <button class="dropdown-item" onclick="loadExample(18)">18. ⚡ Loop + Const Folding</button>
+          <button class="dropdown-item" onclick="loadExample(19)">19. 🔥 Nested Scope + Branch</button>
+          <button class="dropdown-item" onclick="loadExample(20)">20. 🔥 Float Arithmetic</button>
+          <button class="dropdown-item" onclick="loadExample(21)">21. ⚡ Full Pipeline Showcase</button>
+          <button class="dropdown-item" onclick="loadExample(22)">22. ⚡ Multi Unused Vars</button>
+          <button class="dropdown-item" onclick="loadExample(23)">23. 🔥 If-Else + Optimization</button>
+          <button class="dropdown-item" onclick="loadExample(24)">24. 🔥 Function + Loop (Power)</button>
+          <button class="dropdown-item" onclick="loadExample(25)">25. 🔥 GCD Algorithm</button>
         </div>
       </div>
       <label class="file-import-label"
@@ -1041,6 +1060,22 @@
           <button class="dropdown-item" onclick="loadGrammarExample(6)">6. Unary Operators</button>
           <button class="dropdown-item" onclick="loadGrammarExample(7)">7. Function Calls</button>
           <button class="dropdown-item" onclick="loadGrammarExample(8)">⚠️ 8. Non-LL(1) Left Recursive</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(9)">⚠️ 9. Precedence Grammar</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(10)">⚠️ 10. Left Recursion</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(11)">11. Left Recursion Removed</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(12)">⚠️ 12. Assignment Grammar</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(13)">13. If-Else Grammar</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(14)">14. While Grammar</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(15)">⚠️ 15. Conflict Grammar</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(16)">16. Balanced Brackets</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(17)">17. 🔥 Multi-Statement Program</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(18)">18. 🔥 Do-While Loop</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(19)">⚠️ 19. Ternary Expression</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(20)">20. Array Access</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(21)">21. Type Declarations</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(22)">⚠️ 22. Nested Blocks</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(23)">23. 🔥 Switch-Case</button>
+          <button class="dropdown-item" onclick="loadGrammarExample(24)">24. 🔥 Lambda Expression</button>
         </div>
       </div>
       <label class="file-import-label"
@@ -1186,13 +1221,33 @@
 
   <script>
     // ── Examples ──────────────────────────────
+    // yeh saare compiler examples hain — dropdown se load hote hain
     const EXAMPLES = {
       1: `int x = 5;\nint y = 10;\nint z = x + y;\nprint(z);`,
       2: `int i = 0;\nint sum = 0;\nwhile (i < n) {\nsum = sum + i;\ni = i + 1;\n}\nprint(sum);`,
       3: `func compute(int n) {\nint i = 0;\nfor (i = 0; i < n; i = i + 1) {\nint j = 0;\nfor (j = 0; j < n; j = j + 1) {\nint val = i + j;\n}\n}\nreturn 0;\n}`,
       4: `int score = 85;\nif (score > 90) {\nprint(1);\n} else {\nif (score > 60) {\nprint(2);\n} else {\nprint(3);\n}\n}`,
       5: `int count = 0;\nint limit = 100;\nwhile (count < limit) {\ncount = count + 1;\n}\nprint(count);`,
-      6: `func factorial(int n) {\nint result = 1;\nint i = 1;\nfor (i = 1; i < n; i = i + 1) {\nresult = result * i;\n}\nreturn result;\n}\nint ans = factorial(5);\nprint(ans);`
+      6: `func factorial(int n) {\nint result = 1;\nint i = 1;\nfor (i = 1; i < n; i = i + 1) {\nresult = result * i;\n}\nreturn result;\n}\nint ans = factorial(5);\nprint(ans);`,
+      7: `int x = 10 + 20;\nint y = 3 * 4;\nint z = x + y;\nprint(z);`,
+      8: `int a = 5;\nint b = a + 2;\nint c = b + 3;\nprint(c);`,
+      9: `int a = 5;\nint b = a + 2;\na = 10;\nint c = a + 1;\nprint(c);`,
+      10: `func test(int n) {\nint x = 5;\nreturn x;\nint y = 10;\nprint(y);\n}`,
+      11: `int x = 5;\nint unused = 100;\nprint(x);`,
+      12: `int a = 5;\nfloat b = 10.5;\nint c = a + b;`,
+      13: `int x = 5;\nint y = x + z;`,
+      14: `int a = 5;\nint a = 10;`,
+      15: `int x = 10;\nint y = 20;\nif (x < y) {\nint sum = x + y;\nprint(sum);\n} else {\nint diff = y - x;\nprint(diff);\n}\nint i = 0;\nwhile (i < 5) {\ni = i + 1;\n}\nprint(i);`,
+      16: `func add(int a, int b) {\nint result = a + b;\nreturn result;\n}\nfunc multiply(int x, int y) {\nint product = x * y;\nreturn product;\n}\nint sum = add(3, 4);\nint prod = multiply(5, 6);\nprint(sum);\nprint(prod);`,
+      17: `int a = 10;\nint b = 20;\nint c = a + b;\nint d = c * 2;\nint e = d - 5;\nprint(e);`,
+      18: `int total = 0;\nint base = 5;\nint bonus = 10;\nint i = 0;\nfor (i = 0; i < 3; i = i + 1) {\ntotal = total + base + bonus;\n}\nprint(total);`,
+      19: `func outer(int n) {\nint a = 10;\nint b = 20;\nif (n > 0) {\nint c = a + b;\nprint(c);\n} else {\nint d = a - b;\nprint(d);\n}\nreturn a;\n}`,
+      20: `float pi = 3.14;\nfloat radius = 5.0;\nfloat area = pi * radius;\nprint(area);`,
+      21: `int x = 2 + 3;\nint y = x * 4;\nint z = y + 1;\nint w = 10 - z;\nprint(w);`,
+      22: `int a = 5;\nint b = 10;\nint c = 15;\nint unused1 = 100;\nint unused2 = 200;\nint sum = a + b + c;\nprint(sum);`,
+      23: `int x = 10;\nint y = 20;\nint max = 0;\nif (x > y) {\nmax = x;\n} else {\nmax = y;\n}\nint doubled = max * 2;\nint result = doubled + 5;\nprint(result);`,
+      24: `func power(int base, int exp) {\nint result = 1;\nint i = 0;\nfor (i = 0; i < exp; i = i + 1) {\nresult = result * base;\n}\nreturn result;\n}\nint val = power(2, 8);\nprint(val);`,
+      25: `func gcd(int a, int b) {\nint temp = 0;\nwhile (b > 0) {\ntemp = b;\nb = a - b;\na = temp;\n}\nreturn a;\n}\nint result = gcd(48, 18);\nprint(result);`
     };
 
     // ── Editor ────────────────────────────────
@@ -1722,7 +1777,8 @@ async function runCompiler() {
         applied.forEach(o => {
           const typeClass = {
             'Constant Folding': 'pill-blue', 'Dead Code Elimination': 'pill-red',
-            'Unused Variable': 'pill-yellow', 'Loop Invariant': 'pill-purple'
+            'Unused Variable': 'pill-yellow', 'Loop Invariant': 'pill-purple',
+            'Constant Propagation': 'pill-green'
           }[o.type] || 'pill-gray';
           html += `<div class="opt-card"><div class="opt-header"><span class="pill ${typeClass}">${esc(o.type)}</span><span style="color:#94a3b8;font-size:12px">Line ${o.line}</span></div>`;
           html += `<div class="opt-change"><span style="color:#dc2626">${esc(o.original)}</span> → <span style="color:#16a34a">${esc(o.optimized)}</span></div>`;
@@ -1736,6 +1792,7 @@ async function runCompiler() {
     // Tab 10: Grammar Tool
     // ════════════════════════════════════════════
 
+    // yeh saare grammar lab examples hain — dropdown se load hote hain
     const GRAMMAR_EXAMPLES = {
       1: {
         name: 'Arithmetic Expressions',
@@ -1776,6 +1833,86 @@ async function runCompiler() {
         name: 'Non-LL(1) — Left Recursive',
         grammar: `E -> E + T | T\nT -> T * F | F\nF -> ( E ) | id`,
         input: 'id + id'
+      },
+      9: {
+        name: 'Precedence Grammar',
+        grammar: `E -> E + T | E - T | T\nT -> T * F | T / F | F\nF -> ( E ) | num`,
+        input: 'num + num * num'
+      },
+      10: {
+        name: 'Left Recursion Detection',
+        grammar: `A -> A a | b`,
+        input: 'b a a'
+      },
+      11: {
+        name: 'Left Recursion Removed',
+        grammar: `A -> b AP\nAP -> a AP | ε`,
+        input: 'b a a'
+      },
+      12: {
+        name: 'Assignment Grammar',
+        grammar: `S -> id = E ;\nE -> E + T | T\nT -> id | num`,
+        input: 'id = num + id ;'
+      },
+      13: {
+        name: 'If-Else Grammar',
+        grammar: `S -> if ( C ) S SP\nSP -> else S | ε\nC -> id relop id\nS -> id = E ;\nE -> id | num`,
+        input: 'if ( id relop id ) id = num ;'
+      },
+      14: {
+        name: 'While Grammar',
+        grammar: `S -> while ( C ) { B }\nC -> id relop id\nB -> S B | ε\nS -> id = E ;\nE -> id | num`,
+        input: 'while ( id relop id ) { id = num ; }'
+      },
+      15: {
+        name: '⚠️ Conflict Grammar',
+        grammar: `S -> a A | b\nA -> a | ε`,
+        input: 'a a'
+      },
+      16: {
+        name: 'Balanced Brackets',
+        grammar: `S -> [ S ] S | ε`,
+        input: '[ [ ] ] [ ]'
+      },
+      17: {
+        name: 'Multi-Statement Program',
+        grammar: `P -> S P | ε\nS -> D | A | W | R\nD -> type id = E ;\nA -> id = E ;\nW -> while ( C ) { P }\nR -> return E ;\nC -> E relop E\nE -> T EP\nEP -> + T EP | - T EP | ε\nT -> F TP\nTP -> * F TP | / F TP | ε\nF -> id | num | ( E )`,
+        input: 'type id = num ; while ( id relop num ) { id = id + num ; } return id ;'
+      },
+      18: {
+        name: 'Do-While Loop',
+        grammar: `S -> do { B } while ( C ) ;\nB -> S B | ε\nS -> id = E ;\nC -> E relop E\nE -> id | num`,
+        input: 'do { id = num ; } while ( id relop num ) ;'
+      },
+      19: {
+        name: 'Ternary Expression',
+        grammar: `E -> T ? E : E | T\nT -> F TP\nTP -> + F TP | ε\nF -> id | num | ( E )`,
+        input: 'id ? num : num + id'
+      },
+      20: {
+        name: 'Array Access',
+        grammar: `S -> id IX = E ;\nIX -> [ E ] | ε\nE -> T EP\nEP -> + T EP | ε\nT -> id IX | num | ( E )`,
+        input: 'id [ num ] = id + num ;'
+      },
+      21: {
+        name: 'Type Declarations',
+        grammar: `P -> D P | ε\nD -> T id DL ;\nDL -> , id DL | ε\nT -> int | float | char`,
+        input: 'int id , id , id ; float id ;'
+      },
+      22: {
+        name: 'Nested Blocks',
+        grammar: `S -> { L }\nL -> S L | id = E ; L | ε\nE -> E + T | T\nT -> id | num`,
+        input: '{ id = num ; { id = id + num ; } }'
+      },
+      23: {
+        name: 'Switch-Case',
+        grammar: `S -> switch ( E ) { CL }\nCL -> case num : B CL | default : B | ε\nB -> id = E ; B | ε\nE -> id | num`,
+        input: 'switch ( id ) { case num : id = num ; default : id = id ; }'
+      },
+      24: {
+        name: 'Lambda / Anonymous Func',
+        grammar: `E -> fn ( PL ) => E | T\nPL -> id PLR | ε\nPLR -> , id PLR | ε\nT -> F TP\nTP -> + F TP | ε\nF -> id | num | ( E )`,
+        input: 'fn ( id , id ) => id + id'
       }
     };
 
